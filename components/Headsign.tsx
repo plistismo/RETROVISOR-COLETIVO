@@ -17,6 +17,19 @@ export const Headsign: React.FC<HeadsignProps> = ({ lineNumber, destination, isO
   // Parsing line number for the split display: "5341-10" -> "5341"
   const cleanLineNumber = lineNumber.split('-')[0];
 
+  // Helper to determine font size based on text length to avoid line breaks
+  const getDestinationStyle = (text: string) => {
+    const len = text.length;
+    // Logic: The longer the text, the smaller the percentage of container width (cqw) used.
+    if (len > 15) {
+      return { fontSize: 'clamp(1.2rem, 9cqw, 2rem)' }; // Very long text
+    } else if (len > 8) {
+      return { fontSize: 'clamp(1.8rem, 11cqw, 2.8rem)' }; // Medium text (like TERM. LAPA)
+    } else {
+      return { fontSize: 'clamp(2.5rem, 15cqw, 3.8rem)' }; // Short text
+    }
+  };
+
   return (
     <div className="w-full relative z-20">
       
@@ -49,22 +62,22 @@ export const Headsign: React.FC<HeadsignProps> = ({ lineNumber, destination, isO
         </div>
       </div>
 
-      {/* Main Headsign Box Container */}
-      <div className="bg-black p-3 pt-1 border-x-8 border-gray-800 shadow-2xl relative flex gap-2 h-36">
+      {/* Main Headsign Box Container - Height h-24 */}
+      <div className="bg-black p-2 border-x-8 border-gray-800 shadow-2xl relative flex gap-2 h-24">
         
         {/* Left Box: Fixed Number */}
         <div className="w-1/3 h-full bg-[#111] rounded border-4 border-gray-700 relative overflow-hidden flex items-center justify-center">
            {/* Glass Glare */}
            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10 pointer-events-none"></div>
            
-           <span className={`font-['Jost'] font-bold text-5xl sm:text-6xl tracking-tighter transition-opacity duration-500
+           <span className={`font-['Jost'] font-bold text-6xl sm:text-7xl tracking-tighter transition-opacity duration-500 leading-none mt-1
              ${isOn ? 'text-white opacity-90' : 'text-gray-800 opacity-20'}`}>
              {cleanLineNumber}
            </span>
         </div>
 
         {/* Right Box: Rolling Destination */}
-        <div className="w-2/3 h-full bg-[#111] rounded border-4 border-gray-700 relative overflow-hidden">
+        <div className="w-2/3 h-full bg-[#111] rounded border-4 border-gray-700 relative overflow-hidden" style={{ containerType: 'inline-size' }}>
            {/* Glass Glare */}
            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10 pointer-events-none"></div>
            
@@ -82,40 +95,44 @@ export const Headsign: React.FC<HeadsignProps> = ({ lineNumber, destination, isO
            >
              
              {/* 1. Main Destination (TP) */}
-             <div className="h-[25%] flex items-center justify-center bg-[#050505]">
-                <span className={`font-['Jost'] font-bold text-3xl sm:text-5xl uppercase tracking-wider text-center leading-none
-                  ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}>
+             <div className="h-[25%] flex items-center justify-center bg-[#050505] px-2 overflow-hidden">
+                <span className={`font-['Jost'] font-bold uppercase tracking-wider text-center leading-none whitespace-nowrap
+                  ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}
+                  style={getDestinationStyle(destination)}
+                >
                   {destination}
                 </span>
              </div>
 
              {/* 2. Intermediates */}
-             <div className="h-[25%] flex flex-col items-center justify-center bg-[#050505] space-y-2">
-                <span className={`font-['Jost'] font-bold text-xl sm:text-2xl uppercase tracking-widest
+             <div className="h-[25%] flex flex-col items-center justify-center bg-[#050505] space-y-1 overflow-hidden">
+                <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
                   ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
                   SESC POMPEIA
                 </span>
-                 <span className={`font-['Jost'] font-bold text-xl sm:text-2xl uppercase tracking-widest
+                 <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
                   ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
                   TRAV. LAPA
                 </span>
              </div>
 
              {/* 3. Secondary Destination (TS) */}
-             <div className="h-[25%] flex items-center justify-center bg-[#050505]">
-                <span className={`font-['Jost'] font-bold text-3xl sm:text-5xl uppercase tracking-wider text-center leading-none
-                  ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}>
+             <div className="h-[25%] flex items-center justify-center bg-[#050505] px-2 overflow-hidden">
+                <span className={`font-['Jost'] font-bold uppercase tracking-wider text-center leading-none whitespace-nowrap
+                  ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}
+                  style={getDestinationStyle("TERM. SECUNDÁRIO")}
+                >
                   TERM. SECUNDÁRIO
                 </span>
              </div>
 
              {/* 4. Intermediates Clone / Loop */}
-             <div className="h-[25%] flex flex-col items-center justify-center bg-[#050505] space-y-2">
-                 <span className={`font-['Jost'] font-bold text-xl sm:text-2xl uppercase tracking-widest
+             <div className="h-[25%] flex flex-col items-center justify-center bg-[#050505] space-y-1 overflow-hidden">
+                 <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
                   ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
                   TRAV. LAPA
                 </span>
-                 <span className={`font-['Jost'] font-bold text-xl sm:text-2xl uppercase tracking-widest
+                 <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
                   ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
                   SESC POMPEIA
                 </span>
