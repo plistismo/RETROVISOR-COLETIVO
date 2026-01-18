@@ -9,4 +9,5 @@ export interface BusLine {
   description: string;
   history: string;
   plate: string;
+  itinerary?: string[]; // Optional list of streets
 }

@@ -1,63 +1,119 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
+import { BusLine } from '../types';
 
-interface WindshieldProps {
-  description: string;
-  history: string;
-  year: string;
-  companyName: string;
+interface WindshieldProps extends BusLine {
+  isOn?: boolean;
 }
 
-export const Windshield: React.FC<WindshieldProps> = ({ description, history, year, companyName }) => {
+export const Windshield: React.FC<WindshieldProps> = ({ 
+  lineNumber, 
+  itinerary, 
+  isOn = true 
+}) => {
+  
+  const [showDetails, setShowDetails] = useState(false);
+
+  // Generate random raindrops
+  const rainDrops = useMemo(() => {
+    return Array.from({ length: 30 }).map((_, i) => ({
+      left: Math.random() * 100,
+      delay: Math.random() * 2,
+      duration: 0.7 + Math.random() * 0.5,
+      opacity: 0.3 + Math.random() * 0.5
+    }));
+  }, []);
+
+  const toggleDetails = () => {
+    if (isOn) setShowDetails(!showDetails);
+  };
+
+  const cleanLineNumber = lineNumber.split('-')[0]; // "5341"
+  const lineSuffix = lineNumber.split('-')[1] || "10"; // "10"
+
   return (
     <div className="relative w-full mx-auto z-0 -mt-2">
-      {/* Rubber Seal (Borda de Borracha) */}
-      <div className="bg-gray-900 p-3 sm:p-5 rounded-3xl shadow-2xl">
+      {/* Rubber Seal (Borda de Borracha grossa do S21) */}
+      <div className="bg-[#111] p-4 sm:p-5 rounded-3xl shadow-2xl border-t border-gray-800">
         
         {/* The Glass Area */}
-        <div className="relative bg-blue-50/90 rounded-2xl h-[400px] sm:h-[450px] overflow-hidden flex flex-col p-6 text-gray-800 shadow-inner border border-blue-200/50">
+        <div className={`relative rounded-[2rem] h-[450px] overflow-hidden flex flex-col shadow-inner border border-gray-800/50 transition-colors duration-1000
+           ${isOn ? 'bg-[#1a202c]/90' : 'bg-black'}`}> {/* Vidro fumê escuro */}
           
-          {/* Glass Reflection Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/10 pointer-events-none z-10 rounded-2xl"></div>
-          <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/20 blur-3xl rounded-full pointer-events-none z-10"></div>
-
-          {/* Wiper Shadows (Optional Detail) */}
-          <div className="absolute bottom-0 left-1/4 w-2 h-48 bg-black/10 rotate-45 transform origin-bottom rounded-full blur-sm z-0"></div>
-          <div className="absolute bottom-0 right-1/4 w-2 h-48 bg-black/10 -rotate-45 transform origin-bottom rounded-full blur-sm z-0"></div>
-
-          {/* Content Card (A folha de papel colada no vidro) */}
-          <div className="relative z-20 bg-white shadow-lg p-6 rotate-1 transform max-w-lg mx-auto border border-gray-300 transition-all duration-500 ease-in-out">
-            {/* Tape effect */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-yellow-100/80 border border-yellow-200 shadow-sm rotate-2"></div>
-
-            <h2 className="text-2xl font-bold font-['Saira_Stencil_One'] text-gray-800 mb-2 border-b-2 border-black pb-1 uppercase">
-              Ficha Técnica
-            </h2>
-            
-            <div className="space-y-4 font-['Roboto']">
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-bold">Empresa Operadora</p>
-                <p className="text-lg font-bold text-gray-900">{companyName}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-bold">Ano de Referência</p>
-                <div className="inline-block bg-gray-800 text-white px-2 py-1 rounded text-sm font-mono mt-1">
-                  {year}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-bold">Sobre a Linha</p>
-                <p className="text-gray-700 leading-relaxed text-sm sm:text-base mt-1">
-                  {history}
-                </p>
-              </div>
-            </div>
-
-             <div className="mt-4 pt-4 border-t border-dashed border-gray-400 text-center text-xs text-gray-500 italic">
-               "{description}"
-             </div>
+          {/* RAIN LAYER */}
+          <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden mix-blend-overlay">
+             {rainDrops.map((drop, i) => (
+                <div 
+                  key={i}
+                  className="absolute top-[-20px] w-[2px] h-16 bg-gradient-to-b from-transparent to-white/40 rounded-full animate-rain-fall"
+                  style={{
+                    left: `${drop.left}%`,
+                    animationDelay: `${drop.delay}s`,
+                    animationDuration: `${drop.duration}s`,
+                    opacity: drop.opacity
+                  }}
+                />
+             ))}
           </div>
+
+          {/* Reflections */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/40 pointer-events-none z-10"></div>
+          
+          {/* --- ELEMENTS ON GLASS --- */}
+
+          {/* 1. Top Left Fixed Sign */}
+          <div className={`absolute top-6 left-6 z-20 transform -rotate-2 transition-opacity duration-500 ${isOn ? 'opacity-90' : 'opacity-30'}`}>
+             <div className="bg-red-700 border-2 border-white/80 shadow-lg px-3 py-2 max-w-[140px] text-center">
+               <span className="font-['Jost'] font-bold text-white text-lg leading-tight block drop-shadow-md">
+                 VIA ALAM. STO. AMARO
+               </span>
+             </div>
+             {/* Tape */}
+             <div className="absolute -top-3 left-1/2 w-8 h-4 bg-white/40 rotate-90"></div>
+          </div>
+
+          {/* 2. Hidden Detailed Itinerary Overlay */}
+          <div className={`absolute inset-0 z-15 bg-black/80 backdrop-blur-sm p-8 flex flex-wrap content-start gap-x-8 gap-y-2 transition-all duration-500
+             ${showDetails && isOn ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+             
+             <h3 className="w-full text-yellow-400 font-['Jost'] font-bold text-xl mb-4 border-b border-gray-600 pb-2">
+               ITINERÁRIO PRINCIPAL
+             </h3>
+             
+             {/* List Columns */}
+             {itinerary ? itinerary.map((street, idx) => (
+               <div key={idx} className="w-[45%] text-white/90 font-['Jost'] font-bold text-sm border-l-4 border-yellow-500 pl-2 mb-2">
+                 {street}
+               </div>
+             )) : (
+               <p className="text-gray-500">Informação não disponível.</p>
+             )}
+          </div>
+
+          {/* 3. Bottom Center Trigger (The Split Sign) */}
+          <button 
+            onClick={toggleDetails}
+            className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-20 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transition-all duration-300 transform hover:scale-105 active:scale-95
+              ${isOn ? 'opacity-100 cursor-pointer' : 'opacity-40 cursor-default'}`}
+          >
+            <div className="flex border-4 border-black rounded-lg overflow-hidden w-64 h-24 bg-black">
+               {/* Left Side: White bg, Black Text */}
+               <div className="w-2/3 bg-white flex items-center justify-center border-r-2 border-black">
+                  <span className="font-['Jost'] font-bold text-black text-6xl tracking-tighter">
+                    {cleanLineNumber}
+                  </span>
+               </div>
+               {/* Right Side: Black bg, White Text */}
+               <div className="w-1/3 bg-black flex items-center justify-center">
+                  <span className="font-['Jost'] font-bold text-white text-5xl tracking-tighter">
+                    {lineSuffix}
+                  </span>
+               </div>
+            </div>
+            {/* Suction cups logic (visual) */}
+            <div className="absolute -top-2 left-4 w-4 h-4 rounded-full bg-gray-400/50 shadow-inner"></div>
+            <div className="absolute -top-2 right-4 w-4 h-4 rounded-full bg-gray-400/50 shadow-inner"></div>
+          </button>
+
         </div>
       </div>
     </div>

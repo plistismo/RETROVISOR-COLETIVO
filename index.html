@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Memorial de Linhas Urbanas SP</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Saira+Stencil+One&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;700;900&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
@@ -14,8 +14,14 @@
               'bus-body': 'var(--bus-color)',
             },
             boxShadow: {
-              'headlight-off': 'inset 0 0 10px 5px rgba(0,0,0,0.3)',
+              'headlight-off': 'inset 0 0 10px 5px rgba(0,0,0,0.5)',
               'headlight-on': '0 0 30px 10px rgba(255, 253, 208, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.8)',
+            },
+            animation: {
+              'engine-start': 'shake 0.5s ease-in-out infinite',
+              'engine-idle': 'rumble 0.2s ease-in-out infinite',
+              'rain-fall': 'fall linear infinite',
+              'roll-destination': 'roll 10s cubic-bezier(0.45, 0, 0.55, 1) infinite',
             }
           }
         }
@@ -25,7 +31,56 @@
       body {
         background-color: #1a1a1a;
         margin: 0;
-        font-family: 'Roboto', sans-serif;
+        font-family: 'Jost', sans-serif;
+      }
+
+      /* Engine Start Vibration */
+      @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+      }
+
+      /* Engine Idle Vibration */
+      @keyframes rumble {
+        0% { transform: translate(0, 0); }
+        50% { transform: translate(0, 1px); }
+        100% { transform: translate(0, 0); }
+      }
+
+      /* Raindrops */
+      @keyframes fall {
+        0% { transform: translateY(-100px); opacity: 0; }
+        10% { opacity: 0.8; }
+        90% { opacity: 0.8; }
+        100% { transform: translateY(500px); opacity: 0; }
+      }
+
+      /* Destination Roll Animation */
+      /* 
+         Structure of the list:
+         1. Main Destination (TERM. LAPA)
+         2. Intermediates (SESC / TRAV)
+         3. Secondary Destination (TERM. SECUNDARIO)
+         4. Intermediates (TRAV / SESC)
+         5. Main Destination (Clone for smooth loop)
+      */
+      @keyframes roll {
+        0%, 35% { transform: translateY(0); } /* Pause on Main (3.5s) */
+        40% { transform: translateY(-25%); } /* Scroll to Intermediates */
+        45% { transform: translateY(-25%); } /* Brief pause */
+        50%, 85% { transform: translateY(-50%); } /* Scroll to Secondary & Pause (3.5s) */
+        90% { transform: translateY(-75%); } /* Scroll to Intermediates */
+        95% { transform: translateY(-75%); } /* Brief pause */
+        100% { transform: translateY(-100%); } /* Scroll back to start (Main Clone) */
       }
     </style>
   <script type="importmap">

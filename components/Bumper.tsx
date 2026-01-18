@@ -14,8 +14,8 @@ export const Bumper: React.FC<BumperProps> = ({ plate }) => {
       
       {/* License Plate */}
       <div className="bg-gray-200 border-4 border-black rounded px-4 py-2 shadow-lg transform -translate-y-2">
-        <div className="text-[10px] text-center uppercase font-bold tracking-widest text-gray-600">Brasil</div>
-        <div className="font-mono text-3xl sm:text-4xl font-bold text-gray-800 tracking-wider uppercase border-t border-gray-400 mt-1 pt-1">
+        <div className="text-[10px] text-center uppercase font-bold font-['Jost'] tracking-widest text-gray-600">Brasil</div>
+        <div className="font-['Jost'] font-bold text-3xl sm:text-4xl text-gray-800 tracking-wider uppercase border-t border-gray-400 mt-1 pt-1">
           {plate}
         </div>
       </div>
@@ -25,7 +25,7 @@ export const Bumper: React.FC<BumperProps> = ({ plate }) => {
         <div className="w-16 h-6 bg-red-800/80 rounded border border-gray-500 shadow-inner"></div>
         
         {/* Links */}
-        <div className="flex space-x-4 text-xs font-bold text-gray-700 uppercase tracking-widest">
+        <div className="flex space-x-4 text-xs font-bold font-['Jost'] text-gray-700 uppercase tracking-widest">
           <button className="hover:text-black hover:underline">Mapa</button>
           <span className="text-gray-400">|</span>
           <button className="hover:text-black hover:underline">Galeria</button>
