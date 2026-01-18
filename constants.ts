@@ -4,8 +4,6 @@ import { BusLine } from './types';
 const INT_STO_AMARO = ['SOCORRO', 'LARGO 13', 'AV. STO. AMARO', 'BORBA GATO'];
 const INT_JOAO_DIAS = ['CENTRO EMPRESARIAL', 'PTE. JOÃO DIAS', 'GIOVANNI GRONCHI'];
 const INT_BANDEIRA = ['AV. 9 DE JULHO', 'ITAIM BIBI', 'JARDINS', 'AV. BRASIL'];
-const INT_CENTRO = ['ANHANGABAÚ', '23 DE MAIO', 'PÇA. DA SÉ'];
-const INT_MARGINAL = ['PTE. SOCORRO', 'MARGINAL PINHEIROS', 'EST. ITAPECERICA'];
 
 export const BUS_LINES: BusLine[] = [
   // 5xxx Lines
@@ -1249,3 +1247,31 @@ export const BUS_LINES: BusLine[] = [
     viaSign: 'VIA MORUMBI',
   }
 ];
+
+// --- GENERATE GLOBAL ROLL LIST ---
+// Collect all unique destinations from all lines + Specials
+const SPECIAL_DESTINATIONS = [
+  'RESERVADO',
+  'EXPRESSO',
+  'SEMI-EXPRESSO',
+  'GARAGEM',
+  'PAESE',
+  'FORA DE SERVIÇO'
+];
+
+const allDestinations = new Set<string>(SPECIAL_DESTINATIONS);
+
+BUS_LINES.forEach(line => {
+  allDestinations.add(line.destination);
+  allDestinations.add(line.secondaryDestination);
+});
+
+// Convert to array and sort alphabetically
+export const MASTER_DESTINATIONS = Array.from(allDestinations).sort((a, b) => 
+  a.localeCompare(b, 'pt-BR')
+);
+
+// --- GENERATE GLOBAL LINE NUMBER LIST ---
+// Collect all unique base line numbers (e.g., 5119, 6002) and sort them
+export const MASTER_LINE_NUMBERS = Array.from(new Set(BUS_LINES.map(l => l.lineNumber.split('-')[0])))
+  .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));

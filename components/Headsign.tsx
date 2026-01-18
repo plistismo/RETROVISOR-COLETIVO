@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { MASTER_DESTINATIONS, MASTER_LINE_NUMBERS } from '../constants';
 
 interface HeadsignProps {
   lineNumber: string;
   destination: string; // TP
   secondaryDestination: string; // TS
-  intermediateDestinations: string[];
+  intermediateDestinations: string[]; // Ignored for the main roll logic now, but kept in props
   isOn?: boolean;
 }
 
@@ -12,7 +13,6 @@ export const Headsign: React.FC<HeadsignProps> = ({
   lineNumber, 
   destination, 
   secondaryDestination, 
-  intermediateDestinations,
   isOn = true 
 }) => {
   const [activeLight, setActiveLight] = useState<'TP' | 'TS'>('TP');
@@ -25,30 +25,59 @@ export const Headsign: React.FC<HeadsignProps> = ({
   // Parsing line number
   const cleanLineNumber = lineNumber.split('-')[0];
 
-  // --- DESTINATION LOGIC ---
-  // Create the full strip: [TP, ...intermediates, TS]
-  const destinationStrip = useMemo(() => {
-    // Ensure we always have a valid array
-    const intermediates = intermediateDestinations || [];
-    return [destination, ...intermediates, secondaryDestination];
-  }, [destination, secondaryDestination, intermediateDestinations]);
+  // --- DESTINATION LOGIC (GLOBAL ROLL) ---
+  
+  // Determine which text we WANT to show
+  const targetText = activeLight === 'TP' ? destination : secondaryDestination;
+  
+  // Find where it is in the master list
+  const targetIndex = useMemo(() => {
+    const idx = MASTER_DESTINATIONS.indexOf(targetText);
+    return idx >= 0 ? idx : 0; 
+  }, [targetText]);
 
-  // Determine index: 0 for TP, last index for TS
-  const activeIndex = activeLight === 'TP' ? 0 : destinationStrip.length - 1;
+  // Determine transition duration based on distance
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [transitionDuration, setTransitionDuration] = useState('2s');
 
-  // --- LINE NUMBER LOGIC ---
-  // Generate random numbers for the "spin" effect, ending with the actual number
-  const numberStrip = useMemo(() => {
-    const randoms = Array.from({ length: 15 }).map(() => 
-      Math.floor(1000 + Math.random() * 9000).toString()
-    );
-    return [...randoms, cleanLineNumber];
-  }, [cleanLineNumber]); // Only regenerate when the line number actually changes
+  useEffect(() => {
+    if (!isOn) return;
+
+    const distance = Math.abs(targetIndex - currentIndex);
+    // Base speed logic
+    const newDurationMs = Math.min(6000, 2000 + (distance * 100));
+    setTransitionDuration(`${newDurationMs}ms`);
+    
+    // Update index to trigger animation
+    setCurrentIndex(targetIndex);
+  }, [targetIndex, isOn]);
+
+
+  // --- LINE NUMBER LOGIC (GLOBAL ROLL) ---
+  
+  // Find where current line number is in the master list
+  const targetLineIndex = useMemo(() => {
+    const idx = MASTER_LINE_NUMBERS.indexOf(cleanLineNumber);
+    return idx >= 0 ? idx : 0;
+  }, [cleanLineNumber]);
+
+  const [currentLineIndex, setCurrentLineIndex] = useState(0);
+  const [lineTransitionDuration, setLineTransitionDuration] = useState('2s');
+
+  useEffect(() => {
+    if (!isOn) return;
+    
+    const distance = Math.abs(targetLineIndex - currentLineIndex);
+    // Similar duration logic to destination
+    const newDurationMs = Math.min(5000, 1500 + (distance * 150));
+    setLineTransitionDuration(`${newDurationMs}ms`);
+
+    setCurrentLineIndex(targetLineIndex);
+  }, [targetLineIndex, isOn]);
 
   // Helper for dynamic font size using Container Query Units (cqw)
   const getDestinationStyle = (text: string) => {
     const len = text.length;
-    // Increased cqw values to utilize space better, but kept clamps to avoid overflow
     if (len > 20) {
        return { fontSize: 'clamp(1rem, 6cqw, 1.8rem)' }; 
     } else if (len > 12) {
@@ -94,14 +123,19 @@ export const Headsign: React.FC<HeadsignProps> = ({
            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10 pointer-events-none"></div>
            
            <div className="relative w-full h-full overflow-hidden">
-             {/* Key changes forces re-render of animation */}
+             {/* The Number Strip - GLOBAL LIST */}
              <div 
-                key={cleanLineNumber} 
-                className={`flex flex-col w-full absolute top-0 left-0 ${isOn ? 'animate-slot-roll-custom' : ''}`}
+                className="w-full absolute top-0 left-0 flex flex-col transition-transform ease-in-out"
+                style={{
+                   height: `${MASTER_LINE_NUMBERS.length * 100}%`,
+                   transform: `translateY(-${(currentLineIndex * (100 / MASTER_LINE_NUMBERS.length))}%)`,
+                   transitionDuration: isOn ? lineTransitionDuration : '0s'
+                }}
              >
-                {numberStrip.map((num, i) => (
-                  <div key={i} className="h-[80px] flex items-center justify-center shrink-0"> 
-                     {/* height matches parent container roughly (h-24 minus borders/padding ~ 80px) */}
+                {MASTER_LINE_NUMBERS.map((num, i) => (
+                  <div key={i} className="w-full flex items-center justify-center shrink-0 border-b border-white/5"
+                     style={{ height: `${100 / MASTER_LINE_NUMBERS.length}%` }} 
+                  > 
                      <span className={`font-['Jost'] font-bold text-6xl sm:text-7xl tracking-tighter leading-none
                        ${isOn ? 'text-white opacity-90' : 'text-gray-800 opacity-20'}`}>
                        {num}
@@ -117,20 +151,20 @@ export const Headsign: React.FC<HeadsignProps> = ({
            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10 pointer-events-none"></div>
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/fabric-of-squares.png')] opacity-10 pointer-events-none z-0"></div>
 
-           {/* The Destination Strip */}
+           {/* The Destination Strip - GLOBAL LIST */}
            <div 
              className="w-full absolute top-0 left-0 flex flex-col transition-transform ease-in-out"
              style={{
-               height: `${destinationStrip.length * 100}%`,
-               transform: `translateY(-${(activeIndex * (100 / destinationStrip.length))}%)`,
-               transitionDuration: '3000ms' // Slower, smoother roll
+               height: `${MASTER_DESTINATIONS.length * 100}%`,
+               transform: `translateY(-${(currentIndex * (100 / MASTER_DESTINATIONS.length))}%)`,
+               transitionDuration: isOn ? transitionDuration : '0s'
              }}
            >
-             {destinationStrip.map((dest, i) => (
+             {MASTER_DESTINATIONS.map((dest, i) => (
                <div 
                   key={i} 
-                  className="w-full flex items-center justify-center bg-[#050505] px-2 overflow-hidden" 
-                  style={{ height: `${100 / destinationStrip.length}%` }} // Equal height for all items
+                  className="w-full flex items-center justify-center bg-[#050505] px-2 overflow-hidden border-b border-white/5" 
+                  style={{ height: `${100 / MASTER_DESTINATIONS.length}%` }} // Equal height for all items
                >
                   <span className={`font-['Jost'] font-bold uppercase tracking-wider text-center leading-none whitespace-nowrap
                     ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}
@@ -144,16 +178,6 @@ export const Headsign: React.FC<HeadsignProps> = ({
         </div>
 
       </div>
-
-      <style>{`
-        @keyframes slotRollCustom {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(calc(-100% + 80px)); } /* Stops at the last item (assuming 80px item height) */
-        }
-        .animate-slot-roll-custom {
-          animation: slotRollCustom 1.5s cubic-bezier(0.1, 0, 0.2, 1) forwards;
-        }
-      `}</style>
     </div>
   );
 };
