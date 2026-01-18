@@ -16,11 +16,11 @@ export const Windshield: React.FC<WindshieldProps> = ({
 
   // Generate random raindrops
   const rainDrops = useMemo(() => {
-    return Array.from({ length: 30 }).map((_, i) => ({
+    return Array.from({ length: 40 }).map((_, i) => ({
       left: Math.random() * 100,
-      delay: Math.random() * 2,
-      duration: 0.7 + Math.random() * 0.5,
-      opacity: 0.3 + Math.random() * 0.5
+      delay: Math.random() * 5,
+      duration: 0.5 + Math.random() * 0.5,
+      opacity: 0.2 + Math.random() * 0.4
     }));
   }, []);
 
@@ -28,24 +28,25 @@ export const Windshield: React.FC<WindshieldProps> = ({
     if (isOn) setShowDetails(!showDetails);
   };
 
-  const cleanLineNumber = lineNumber.split('-')[0]; // "5341"
-  const lineSuffix = lineNumber.split('-')[1] || "10"; // "10"
+  const cleanLineNumber = lineNumber.split('-')[0];
+  const lineSuffix = lineNumber.split('-')[1] || "10";
 
   return (
-    <div className="relative w-full mx-auto z-0 -mt-2">
-      {/* Rubber Seal (Borda de Borracha grossa do S21) */}
-      <div className="bg-[#111] p-4 sm:p-5 rounded-3xl shadow-2xl border-t border-gray-800">
+    <div className="relative w-full mx-auto px-4 sm:px-6">
+      
+      {/* Rubber Seal (Moldura preta) */}
+      <div className="bg-[#111] p-2 pt-3 rounded-[1.5rem] shadow-2xl relative z-10">
         
         {/* The Glass Area */}
-        <div className={`relative rounded-[2rem] h-[450px] overflow-hidden flex flex-col shadow-inner border border-gray-800/50 transition-colors duration-1000
-           ${isOn ? 'bg-[#1a202c]/90' : 'bg-black'}`}> {/* Vidro fumê escuro */}
+        <div className={`relative rounded-[1rem] h-[280px] sm:h-[300px] overflow-hidden flex flex-col shadow-[inset_0_0_50px_rgba(0,0,0,0.8)] border border-gray-800 transition-colors duration-1000
+           ${isOn ? 'bg-[#1a202c]' : 'bg-black'}`}> 
           
           {/* RAIN LAYER */}
-          <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden mix-blend-overlay">
+          <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden mix-blend-screen">
              {rainDrops.map((drop, i) => (
                 <div 
                   key={i}
-                  className="absolute top-[-20px] w-[2px] h-16 bg-gradient-to-b from-transparent to-white/40 rounded-full animate-rain-fall"
+                  className="absolute top-[-50px] w-[1px] h-20 bg-white/30 rounded-full animate-rain-fall"
                   style={{
                     left: `${drop.left}%`,
                     animationDelay: `${drop.delay}s`,
@@ -57,67 +58,83 @@ export const Windshield: React.FC<WindshieldProps> = ({
           </div>
 
           {/* Reflections */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/40 pointer-events-none z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-black/60 pointer-events-none z-10"></div>
           
+          {/* WIPERS */}
+          <div className="absolute bottom-0 w-full h-full z-20 pointer-events-none">
+            {/* Left Wiper */}
+            <div className={`absolute bottom-2 left-[25%] w-2 h-[220px] bg-[#0a0a0a] origin-bottom transform -rotate-[50deg] shadow-xl rounded-full border border-gray-800
+              ${isOn ? 'animate-[wipe_2.5s_ease-in-out_infinite]' : ''}`}>
+               <div className="absolute top-0 -left-1 w-4 h-32 bg-black rounded opacity-90"></div>
+            </div>
+             {/* Right Wiper */}
+            <div className={`absolute bottom-2 right-[45%] w-2 h-[220px] bg-[#0a0a0a] origin-bottom transform -rotate-[50deg] shadow-xl rounded-full border border-gray-800
+              ${isOn ? 'animate-[wipe_2.5s_ease-in-out_infinite_0.15s]' : ''}`}>
+               <div className="absolute top-0 -left-1 w-4 h-32 bg-black rounded opacity-90"></div>
+            </div>
+          </div>
+
           {/* --- ELEMENTS ON GLASS --- */}
 
-          {/* 1. Top Left Fixed Sign - Hides when details are shown */}
-          <div className={`absolute top-6 left-6 z-20 transform -rotate-2 transition-all duration-500 
-            ${isOn && !showDetails ? 'opacity-90 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
-             <div className="bg-red-700 border-2 border-white/80 shadow-lg px-3 py-2 max-w-[140px] text-center">
-               <span className="font-['Jost'] font-bold text-white text-lg leading-tight block drop-shadow-md uppercase">
+          {/* 1. Via Sign - MOVED TO TOP CENTER */}
+          <div className={`absolute top-4 left-1/2 transform -translate-x-1/2 z-20 transition-all duration-500 
+            ${isOn && !showDetails ? 'opacity-95 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+             <div className="bg-white border-2 border-black shadow-lg px-4 py-1.5 min-w-[160px] shadow-black/50 transform rotate-[-1deg]">
+               <span className="font-['Jost'] font-black text-black text-xl leading-none block uppercase text-center tracking-tighter">
                  {viaSign}
                </span>
              </div>
-             {/* Tape */}
-             <div className="absolute -top-3 left-1/2 w-8 h-4 bg-white/40 rotate-90"></div>
+             {/* Tape holding it */}
+             <div className="absolute -top-3 left-1/2 w-8 h-6 bg-gray-400/40 -translate-x-1/2 rotate-2 backdrop-blur-sm"></div>
           </div>
 
-          {/* 2. Hidden Detailed Itinerary Overlay */}
-          <div className={`absolute inset-0 z-15 bg-black/80 backdrop-blur-sm p-8 flex flex-wrap content-start gap-x-8 gap-y-2 transition-all duration-500
-             ${showDetails && isOn ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-             
-             <h3 className="w-full text-yellow-400 font-['Jost'] font-bold text-xl mb-4 border-b border-gray-600 pb-2">
-               ITINERÁRIO PRINCIPAL
+          {/* 2. Itinerary Overlay */}
+          <div className={`absolute inset-0 z-25 bg-black/80 backdrop-blur-md p-6 flex flex-col gap-4 transition-all duration-500
+             ${showDetails && isOn ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-10'}`}>
+             <h3 className="text-yellow-400 font-['Jost'] font-black text-2xl uppercase border-b-2 border-yellow-500/50 pb-2">
+               Itinerário
              </h3>
-             
-             {/* List Columns */}
-             {itinerary ? itinerary.map((street, idx) => (
-               <div key={idx} className="w-[45%] text-white/90 font-['Jost'] font-bold text-sm border-l-4 border-yellow-500 pl-2 mb-2">
-                 {street}
-               </div>
-             )) : (
-               <p className="text-gray-500">Informação não disponível.</p>
-             )}
+             <div className="flex flex-wrap gap-x-4 gap-y-2 content-start overflow-y-auto">
+               {itinerary ? itinerary.map((street, idx) => (
+                 <div key={idx} className="bg-white/10 px-3 py-1 rounded text-white font-['Jost'] font-bold text-sm border-l-2 border-yellow-500">
+                   {street}
+                 </div>
+               )) : (
+                 <p className="text-gray-500">Sem detalhes.</p>
+               )}
+             </div>
           </div>
 
-          {/* 3. Bottom Center Trigger (The Split Sign) */}
+          {/* 3. Bottom Plate (Line Number) - Kept at bottom left */}
           <button 
             onClick={toggleDetails}
-            className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-20 shadow-[0_5px_15px_rgba(0,0,0,0.5)] transition-all duration-300 transform hover:scale-105 active:scale-95
-              ${isOn ? 'opacity-100 cursor-pointer' : 'opacity-40 cursor-default'}`}
+            className={`absolute bottom-4 left-6 z-20 transition-all duration-300 transform hover:scale-105 active:scale-95 group
+              ${isOn ? 'opacity-100 cursor-pointer' : 'opacity-50 cursor-default'}`}
           >
-            <div className="flex border-4 border-black rounded-lg overflow-hidden w-64 h-24 bg-black">
-               {/* Left Side: White bg, Black Text */}
-               <div className="w-2/3 bg-white flex items-center justify-center border-r-2 border-black">
-                  <span className="font-['Jost'] font-bold text-black text-6xl tracking-tighter">
+            <div className="flex border-[2px] border-black rounded shadow-lg overflow-hidden w-40 h-14">
+               <div className="w-2/3 bg-gray-100 flex items-center justify-center border-r border-black group-hover:bg-white transition-colors">
+                  <span className="font-['Jost'] font-black text-black text-3xl tracking-tighter">
                     {cleanLineNumber}
                   </span>
                </div>
-               {/* Right Side: Black bg, White Text */}
                <div className="w-1/3 bg-black flex items-center justify-center">
-                  <span className="font-['Jost'] font-bold text-white text-5xl tracking-tighter">
+                  <span className="font-['Jost'] font-bold text-white text-2xl tracking-tighter">
                     {lineSuffix}
                   </span>
                </div>
             </div>
-            {/* Suction cups logic (visual) */}
-            <div className="absolute -top-2 left-4 w-4 h-4 rounded-full bg-gray-400/50 shadow-inner"></div>
-            <div className="absolute -top-2 right-4 w-4 h-4 rounded-full bg-gray-400/50 shadow-inner"></div>
           </button>
 
         </div>
       </div>
+      <style>{`
+        @keyframes wipe {
+          0% { transform: rotate(-50deg); }
+          40% { transform: rotate(50deg); }
+          60% { transform: rotate(50deg); }
+          100% { transform: rotate(-50deg); }
+        }
+      `}</style>
     </div>
   );
 };

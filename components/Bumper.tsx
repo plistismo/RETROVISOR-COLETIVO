@@ -6,35 +6,25 @@ interface BumperProps {
 
 export const Bumper: React.FC<BumperProps> = ({ plate }) => {
   return (
-    <div className="w-full bg-gradient-to-b from-gray-400 via-gray-300 to-gray-500 min-h-[120px] rounded-b-lg border-t-4 border-gray-600 shadow-2xl relative flex flex-col items-center justify-center py-6">
+    <div className="w-full bg-[#1e1e1e] h-20 rounded-b-[3rem] border-t-8 border-black shadow-2xl relative flex items-center justify-center z-20">
       
-      {/* Metallic Texture Lines */}
-      <div className="absolute top-2 w-full h-1 bg-white/30"></div>
-      <div className="absolute bottom-2 w-full h-1 bg-black/20"></div>
+      {/* Texture */}
+      <div className="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
       
-      {/* License Plate */}
-      <div className="bg-gray-200 border-4 border-black rounded px-4 py-2 shadow-lg transform -translate-y-2">
-        <div className="text-[10px] text-center uppercase font-bold font-['Jost'] tracking-widest text-gray-600">Brasil</div>
-        <div className="font-['Jost'] font-bold text-3xl sm:text-4xl text-gray-800 tracking-wider uppercase border-t border-gray-400 mt-1 pt-1">
+      {/* Plate Area */}
+      <div className="bg-gray-200 border-2 border-gray-500 rounded px-4 py-1 shadow-lg transform translate-y-2 z-10 flex flex-col items-center">
+        <div className="w-full flex justify-between items-center border-b border-gray-400 mb-0.5 px-1">
+             <div className="w-2 h-2 bg-blue-700 rounded-full"></div>
+             <span className="text-[7px] uppercase font-bold text-gray-600 tracking-wider">Brasil</span>
+        </div>
+        <div className="font-['Jost'] font-bold text-2xl text-black tracking-widest uppercase leading-none">
           {plate}
         </div>
       </div>
 
-      {/* Fog Lights / Utilities */}
-      <div className="w-full max-w-4xl flex justify-between px-8 sm:px-16 mt-4">
-        <div className="w-16 h-6 bg-red-800/80 rounded border border-gray-500 shadow-inner"></div>
-        
-        {/* Links */}
-        <div className="flex space-x-4 text-xs font-bold font-['Jost'] text-gray-700 uppercase tracking-widest">
-          <button className="hover:text-black hover:underline">Mapa</button>
-          <span className="text-gray-400">|</span>
-          <button className="hover:text-black hover:underline">Galeria</button>
-          <span className="text-gray-400">|</span>
-          <button className="hover:text-black hover:underline">Contato</button>
-        </div>
-
-        <div className="w-16 h-6 bg-red-800/80 rounded border border-gray-500 shadow-inner"></div>
-      </div>
+      {/* Fog Lights / Reflectors */}
+      <div className="absolute left-12 w-12 h-4 bg-red-900/50 rounded-full border border-gray-700 shadow-inner"></div>
+      <div className="absolute right-12 w-12 h-4 bg-red-900/50 rounded-full border border-gray-700 shadow-inner"></div>
     </div>
   );
 };

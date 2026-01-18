@@ -65,9 +65,10 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* The Bus Container */}
+      {/* THE BUS BODY CONTAINER */}
+      {/* Defines the shape of the bus. Background is white (Standard SP upper body) */}
       <div 
-        className={`w-full max-w-3xl flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-1000 relative
+        className={`w-full max-w-3xl flex flex-col shadow-[0_30px_60px_rgba(0,0,0,0.6)] transition-all duration-1000 relative rounded-[3.5rem] overflow-hidden bg-gray-100
           ${isStarting ? 'animate-engine-start' : ''} 
           ${isOn ? 'animate-engine-idle filter-none' : 'brightness-50 grayscale-[0.8]'}
         `}
@@ -75,37 +76,45 @@ const App: React.FC = () => {
       >
         
         {/* 1. Header (Letreiro) */}
-        <Headsign 
-          lineNumber={currentLine.lineNumber} 
-          destination={currentLine.destination}
-          secondaryDestination={currentLine.secondaryDestination}
-          intermediateDestinations={currentLine.intermediateDestinations}
-          isOn={isOn}
-        />
+        <div className="relative z-30">
+          <Headsign 
+            lineNumber={currentLine.lineNumber} 
+            destination={currentLine.destination}
+            secondaryDestination={currentLine.secondaryDestination}
+            intermediateDestinations={currentLine.intermediateDestinations}
+            isOn={isOn}
+          />
+        </div>
 
-        {/* 2. Main (Para-brisa) */}
-        <Windshield 
-          {...currentLine}
-          isOn={isOn}
-        />
+        {/* 2. Main (Para-brisa) - Negative margin to tuck under header */}
+        <div className="relative z-20 -mt-4">
+          <Windshield 
+            {...currentLine}
+            isOn={isOn}
+          />
+        </div>
 
-        {/* 3. Controls (Capô e Faróis) */}
-        <FrontMask 
-          logoText={currentLine.companyLogoText}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          isOn={isOn}
-        />
+        {/* 3. Controls (Capô e Faróis) - Negative margin to tuck under windshield rubber */}
+        <div className="relative z-10 -mt-6">
+          <FrontMask 
+            logoText={currentLine.companyLogoText}
+            onPrev={handlePrev}
+            onNext={handleNext}
+            isOn={isOn}
+          />
+        </div>
 
-        {/* 4. Footer (Para-choque) */}
-        <Bumper 
-          plate={currentLine.plate}
-        />
+        {/* 4. Footer (Para-choque) - Connects to the bottom */}
+        <div className="relative z-0">
+          <Bumper 
+            plate={currentLine.plate}
+          />
+        </div>
 
       </div>
 
-      {/* Background Ambience (Asphalt texture hint) */}
-      <div className="fixed inset-0 pointer-events-none opacity-5 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] z-[-1]"></div>
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none opacity-10 bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')] z-[-1]"></div>
     </div>
   );
 };
