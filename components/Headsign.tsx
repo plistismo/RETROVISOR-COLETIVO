@@ -1,44 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 interface HeadsignProps {
   lineNumber: string;
-  destination: string;
+  destination: string; // TP
+  secondaryDestination: string; // TS
+  intermediateDestinations: string[];
   isOn?: boolean;
 }
 
-export const Headsign: React.FC<HeadsignProps> = ({ lineNumber, destination, isOn = true }) => {
-  const [activeLight, setActiveLight] = useState<'TP' | 'TS' | null>(null);
+export const Headsign: React.FC<HeadsignProps> = ({ 
+  lineNumber, 
+  destination, 
+  secondaryDestination, 
+  intermediateDestinations,
+  isOn = true 
+}) => {
+  const [activeLight, setActiveLight] = useState<'TP' | 'TS'>('TP');
 
   const toggleLight = (type: 'TP' | 'TS') => {
     if (!isOn) return;
-    setActiveLight(prev => prev === type ? null : type);
+    setActiveLight(type);
   };
 
-  // Parsing line number for the split display: "5341-10" -> "5341"
+  // Parsing line number
   const cleanLineNumber = lineNumber.split('-')[0];
 
-  // Helper to determine font size based on text length to avoid line breaks
+  // --- DESTINATION LOGIC ---
+  // Create the full strip: [TP, ...intermediates, TS]
+  const destinationStrip = useMemo(() => {
+    // Ensure we always have a valid array
+    const intermediates = intermediateDestinations || [];
+    return [destination, ...intermediates, secondaryDestination];
+  }, [destination, secondaryDestination, intermediateDestinations]);
+
+  // Determine index: 0 for TP, last index for TS
+  const activeIndex = activeLight === 'TP' ? 0 : destinationStrip.length - 1;
+
+  // --- LINE NUMBER LOGIC ---
+  // Generate random numbers for the "spin" effect, ending with the actual number
+  const numberStrip = useMemo(() => {
+    const randoms = Array.from({ length: 15 }).map(() => 
+      Math.floor(1000 + Math.random() * 9000).toString()
+    );
+    return [...randoms, cleanLineNumber];
+  }, [cleanLineNumber]); // Only regenerate when the line number actually changes
+
+  // Helper for dynamic font size using Container Query Units (cqw)
   const getDestinationStyle = (text: string) => {
     const len = text.length;
-    // Logic: The longer the text, the smaller the percentage of container width (cqw) used.
-    if (len > 15) {
-      return { fontSize: 'clamp(1.2rem, 9cqw, 2rem)' }; // Very long text
-    } else if (len > 8) {
-      return { fontSize: 'clamp(1.8rem, 11cqw, 2.8rem)' }; // Medium text (like TERM. LAPA)
+    // Increased cqw values to utilize space better, but kept clamps to avoid overflow
+    if (len > 20) {
+       return { fontSize: 'clamp(1rem, 6cqw, 1.8rem)' }; 
+    } else if (len > 12) {
+      return { fontSize: 'clamp(1.5rem, 8cqw, 2.5rem)' };
     } else {
-      return { fontSize: 'clamp(2.5rem, 15cqw, 3.8rem)' }; // Short text
+      return { fontSize: 'clamp(2.5rem, 13cqw, 4rem)' };
     }
   };
 
   return (
     <div className="w-full relative z-20">
       
-      {/* Top Roof Section (Fibra de vidro superior do S21) */}
+      {/* Top Roof Section */}
       <div className="bg-[#1a1a1a] h-12 rounded-t-[30px] border-b-2 border-gray-700 flex justify-center items-center relative shadow-lg">
-        
-        {/* TP / TS Lights Container */}
         <div className="flex gap-16">
-          
           {/* TP Light */}
           <div className="flex flex-col items-center gap-1 cursor-pointer" onClick={() => toggleLight('TP')}>
             <div className={`w-12 h-6 rounded-full border-2 border-gray-600 transition-all duration-300 shadow-inner
@@ -58,92 +83,77 @@ export const Headsign: React.FC<HeadsignProps> = ({ lineNumber, destination, isO
             ></div>
             <span className="text-[10px] text-gray-500 font-bold font-['Jost'] tracking-widest select-none">TS</span>
           </div>
-
         </div>
       </div>
 
-      {/* Main Headsign Box Container - Height h-24 */}
+      {/* Main Headsign Box */}
       <div className="bg-black p-2 border-x-8 border-gray-800 shadow-2xl relative flex gap-2 h-24">
         
-        {/* Left Box: Fixed Number */}
+        {/* Left Box: Line Number */}
         <div className="w-1/3 h-full bg-[#111] rounded border-4 border-gray-700 relative overflow-hidden flex items-center justify-center">
-           {/* Glass Glare */}
            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10 pointer-events-none"></div>
            
-           <span className={`font-['Jost'] font-bold text-6xl sm:text-7xl tracking-tighter transition-opacity duration-500 leading-none mt-1
-             ${isOn ? 'text-white opacity-90' : 'text-gray-800 opacity-20'}`}>
-             {cleanLineNumber}
-           </span>
+           <div className="relative w-full h-full overflow-hidden">
+             {/* Key changes forces re-render of animation */}
+             <div 
+                key={cleanLineNumber} 
+                className={`flex flex-col w-full absolute top-0 left-0 ${isOn ? 'animate-slot-roll-custom' : ''}`}
+             >
+                {numberStrip.map((num, i) => (
+                  <div key={i} className="h-[80px] flex items-center justify-center shrink-0"> 
+                     {/* height matches parent container roughly (h-24 minus borders/padding ~ 80px) */}
+                     <span className={`font-['Jost'] font-bold text-6xl sm:text-7xl tracking-tighter leading-none
+                       ${isOn ? 'text-white opacity-90' : 'text-gray-800 opacity-20'}`}>
+                       {num}
+                     </span>
+                  </div>
+                ))}
+             </div>
+           </div>
         </div>
 
-        {/* Right Box: Rolling Destination */}
+        {/* Right Box: Destination Roll */}
         <div className="w-2/3 h-full bg-[#111] rounded border-4 border-gray-700 relative overflow-hidden" style={{ containerType: 'inline-size' }}>
-           {/* Glass Glare */}
            <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent z-10 pointer-events-none"></div>
-           
-           {/* Texture */}
            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/fabric-of-squares.png')] opacity-10 pointer-events-none z-0"></div>
 
-           {/* The Scroll Container */}
-           <div className={`w-full h-[400%] absolute top-0 left-0 flex flex-col transition-all duration-500
-             ${isOn ? (activeLight ? '' : 'animate-roll-destination') : ''}
-           `}
+           {/* The Destination Strip */}
+           <div 
+             className="w-full absolute top-0 left-0 flex flex-col transition-transform ease-in-out"
              style={{
-               // If a light is active, force position. 0% is TP, 50% is TS.
-               transform: activeLight === 'TP' ? 'translateY(0)' : activeLight === 'TS' ? 'translateY(-50%)' : undefined
+               height: `${destinationStrip.length * 100}%`,
+               transform: `translateY(-${(activeIndex * (100 / destinationStrip.length))}%)`,
+               transitionDuration: '3000ms' // Slower, smoother roll
              }}
            >
-             
-             {/* 1. Main Destination (TP) */}
-             <div className="h-[25%] flex items-center justify-center bg-[#050505] px-2 overflow-hidden">
-                <span className={`font-['Jost'] font-bold uppercase tracking-wider text-center leading-none whitespace-nowrap
-                  ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}
-                  style={getDestinationStyle(destination)}
-                >
-                  {destination}
-                </span>
-             </div>
-
-             {/* 2. Intermediates */}
-             <div className="h-[25%] flex flex-col items-center justify-center bg-[#050505] space-y-1 overflow-hidden">
-                <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
-                  ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
-                  SESC POMPEIA
-                </span>
-                 <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
-                  ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
-                  TRAV. LAPA
-                </span>
-             </div>
-
-             {/* 3. Secondary Destination (TS) */}
-             <div className="h-[25%] flex items-center justify-center bg-[#050505] px-2 overflow-hidden">
-                <span className={`font-['Jost'] font-bold uppercase tracking-wider text-center leading-none whitespace-nowrap
-                  ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}
-                  style={getDestinationStyle("TERM. SECUNDÁRIO")}
-                >
-                  TERM. SECUNDÁRIO
-                </span>
-             </div>
-
-             {/* 4. Intermediates Clone / Loop */}
-             <div className="h-[25%] flex flex-col items-center justify-center bg-[#050505] space-y-1 overflow-hidden">
-                 <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
-                  ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
-                  TRAV. LAPA
-                </span>
-                 <span className={`font-['Jost'] font-bold text-lg sm:text-xl uppercase tracking-widest whitespace-nowrap
-                  ${isOn ? 'text-green-400' : 'text-green-900/20'}`}>
-                  SESC POMPEIA
-                </span>
-             </div>
-
-             {/* 5. Main Clone for loop is simulated by resetting to 0 via keyframe */}
-
+             {destinationStrip.map((dest, i) => (
+               <div 
+                  key={i} 
+                  className="w-full flex items-center justify-center bg-[#050505] px-2 overflow-hidden" 
+                  style={{ height: `${100 / destinationStrip.length}%` }} // Equal height for all items
+               >
+                  <span className={`font-['Jost'] font-bold uppercase tracking-wider text-center leading-none whitespace-nowrap
+                    ${isOn ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(255,215,0,0.4)]' : 'text-yellow-900/20'}`}
+                    style={getDestinationStyle(dest)}
+                  >
+                    {dest}
+                  </span>
+               </div>
+             ))}
            </div>
         </div>
 
       </div>
+
+      <style>{`
+        @keyframes slotRollCustom {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(calc(-100% + 80px)); } /* Stops at the last item (assuming 80px item height) */
+        }
+        .animate-slot-roll-custom {
+          animation: slotRollCustom 1.5s cubic-bezier(0.1, 0, 0.2, 1) forwards;
+        }
+      `}</style>
     </div>
   );
 };

@@ -77,7 +77,9 @@ const App: React.FC = () => {
         {/* 1. Header (Letreiro) */}
         <Headsign 
           lineNumber={currentLine.lineNumber} 
-          destination={currentLine.destination} 
+          destination={currentLine.destination}
+          secondaryDestination={currentLine.secondaryDestination}
+          intermediateDestinations={currentLine.intermediateDestinations}
           isOn={isOn}
         />
 

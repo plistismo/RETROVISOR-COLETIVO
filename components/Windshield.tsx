@@ -8,6 +8,7 @@ interface WindshieldProps extends BusLine {
 export const Windshield: React.FC<WindshieldProps> = ({ 
   lineNumber, 
   itinerary, 
+  viaSign,
   isOn = true 
 }) => {
   
@@ -64,8 +65,8 @@ export const Windshield: React.FC<WindshieldProps> = ({
           <div className={`absolute top-6 left-6 z-20 transform -rotate-2 transition-all duration-500 
             ${isOn && !showDetails ? 'opacity-90 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
              <div className="bg-red-700 border-2 border-white/80 shadow-lg px-3 py-2 max-w-[140px] text-center">
-               <span className="font-['Jost'] font-bold text-white text-lg leading-tight block drop-shadow-md">
-                 VIA ALAM. STO. AMARO
+               <span className="font-['Jost'] font-bold text-white text-lg leading-tight block drop-shadow-md uppercase">
+                 {viaSign}
                </span>
              </div>
              {/* Tape */}
