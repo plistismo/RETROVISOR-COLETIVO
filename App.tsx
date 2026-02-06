@@ -12,6 +12,10 @@ const App: React.FC = () => {
 
   const currentLine = BUS_LINES[currentIndex];
 
+  // Override the database color '#7f1d1d' (dark red) with a more vibrant red '#dc2626'
+  // to satisfy the visual requirement for a brighter "Saia Vermelha".
+  const displayColor = currentLine.color === '#7f1d1d' ? '#dc2626' : currentLine.color;
+
   const handleNext = () => {
     if (!isOn) return;
     setCurrentIndex((prev) => (prev + 1) % BUS_LINES.length);
@@ -72,7 +76,7 @@ const App: React.FC = () => {
           ${isStarting ? 'animate-engine-start' : ''} 
           ${isOn ? 'animate-engine-idle filter-none' : 'brightness-50 grayscale-[0.8]'}
         `}
-        style={{ '--bus-color': currentLine.color } as React.CSSProperties}
+        style={{ '--bus-color': displayColor } as React.CSSProperties}
       >
         
         {/* 1. Header (Letreiro) */}
